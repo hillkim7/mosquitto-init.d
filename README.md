@@ -24,7 +24,9 @@ $ sudo update-rc.d mosquitto remove
 ```sh
 $ cd <repository-download-dir>
 $ sudo cp mosquitto-forever /etc/init.d/
+$ sudo chmod a+x /etc/init.d/mosquitto-forever
 $ sudo sudo cp mosquitto-forever.sh /etc/mosquitto/
+$ sudo chmod a+x /etc/mosquitto/mosquitto-forever.sh
 $ cd /etc/init.d/
 $ sudo update-rc.d mosquitto-forever defaults
 ```
@@ -38,9 +40,6 @@ $ sudo npm install -g forever
 $ sudo /etc/init.d/mosquitto-forever start
 $ sudo /etc/init.d/mosquitto-forever status
 ```
-## License
-
-This software is released under the [Apache 2.0 License][apache2_license].
 
 © 2017 Altoran System. All rights reserved
 
