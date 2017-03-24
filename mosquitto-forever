@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+### BEGIN INIT INFO
+# Provides:   mosquitto
+# Required-Start: $syslog $network
+# Required-Stop:  $syslog
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description:  mosquitto MQTT broker daemon
+# Description:
+#  There is a segmentation fault while mosquitto is running with websockets
+#  on the "Ubuntu 16.04.2 LTS".
+#  To overcome this situation, this shell script restarts the mosquitto
+#  using the nodejs forever package whenever it is suddenly dead.
+### END INIT INFO
+
+# Source function library.
+. /lib/lsb/init-functions
+
+NAME=mosquitto
+DIR=/etc/mosquitto
+SHELLCMD=mosquitto-forever.sh
+
+user=mosquitto
+pidfile=/var/run/$NAME.pid
+logfile=/var/log/mosquitto/$NAME.log
+forever_dir=/root/.forever
+forever=/usr/bin/forever
+
+start() {
+    echo "Starting $NAME instance: "
+
+    if [ "$pidno" = "" ]; then
+        start_daemon $forever start -p $forever_dir --pidFile $pidfile -l $logfile -a --sourceDir $DIR --workingDir $DIR --minUptime 2000 --spinSleepTime 2000 -c sh $SHELLCMD 
+        RETVAL=$?
+    else
+        echo "Instance already running: pid=$pidno"
+        RETVAL=0
+    fi
+}
+
+restart() {
+    echo -n "Restarting $NAME instance : "
+    if [ "$pidno" != "" ]; then
+        $forever restart $pidno
+        RETVAL=$?
+    else
+        start
+    fi
+}
+
+stop() {
+    echo -n "Shutting down $NAME instance : "
+    if [ "$pidno" != "" ]; then
+        $forever stop $pidno
+    else
+        echo "Instance is not running";
+    fi
+    RETVAL=$?
+}
+
+pidno=`cat "$pidfile" 2>/dev/null`
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status -p ${pidfile}
+        ;;
+    restart)
+        restart
+        ;;
+    *)
+        echo "Usage:  {start|stop|status|restart}"
+        exit 1
+        ;;
+esac
+exit $RETVAL
+
